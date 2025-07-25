@@ -1,0 +1,85 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\12faf01c-b75a-4c9c-986c-03c06752f889.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\12faf01c-b75a-4c9c-986c-03c06752f889.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\198fc1d3-340e-4470-b79a-007160986268.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\198fc1d3-340e-4470-b79a-007160986268.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\2941b4dc-8c27-484c-ab4a-ac2a74ce8b2a.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\2941b4dc-8c27-484c-ab4a-ac2a74ce8b2a.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\668b7506-1d34-41b4-bf64-464cd215dc8a.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\668b7506-1d34-41b4-bf64-464cd215dc8a.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\68374bbb-8294-4f78-bdf2-42f84ec144a5.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\68374bbb-8294-4f78-bdf2-42f84ec144a5.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\73defd3e-e48f-4292-9a05-5be9410bfec7.png",
+      "PackagePath": "staticwebassets\\images\\Events\\73defd3e-e48f-4292-9a05-5be9410bfec7.png"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\7d8ddf24-cf6f-4a55-bd22-02c22dcb6e28.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\7d8ddf24-cf6f-4a55-bd22-02c22dcb6e28.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\84d8baec-5dbf-4dbb-a4e0-d6980d635946.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\84d8baec-5dbf-4dbb-a4e0-d6980d635946.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\862f58ee-65bf-475d-b7cf-ee63d266ee83.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\862f58ee-65bf-475d-b7cf-ee63d266ee83.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\8bf961ce-fdf4-4e2f-9e5c-816e5776448b.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\8bf961ce-fdf4-4e2f-9e5c-816e5776448b.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\8fa355c5-e4f8-4f87-b7e1-4ebd29c168fb.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\8fa355c5-e4f8-4f87-b7e1-4ebd29c168fb.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\a3c81928-ec73-4c8c-a8a8-ae45798f87de.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\a3c81928-ec73-4c8c-a8a8-ae45798f87de.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\d587e586-adfb-4932-a30a-7e1886899e4a.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\d587e586-adfb-4932-a30a-7e1886899e4a.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\d70f6f27-4389-4dca-893c-7864706017ac.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\d70f6f27-4389-4dca-893c-7864706017ac.jpg"
+    },
+    {
+      "Id": "C:\\Users\\hesha\\Documents\\CSharp\\Booking-System\\Booking-System\\wwwroot\\images\\Events\\e8ba5ed4-fefc-4fa7-a950-d580a6757ad9.jpg",
+      "PackagePath": "staticwebassets\\images\\Events\\e8ba5ed4-fefc-4fa7-a950-d580a6757ad9.jpg"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.Booking-System.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.Booking-System.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.Booking-System.props",
+      "PackagePath": "build\\Booking-System.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.Booking-System.props",
+      "PackagePath": "buildMultiTargeting\\Booking-System.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.Booking-System.props",
+      "PackagePath": "buildTransitive\\Booking-System.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
