@@ -41,21 +41,37 @@ A comprehensive event booking system built with ASP.NET Core Web API, featuring 
 
 ## 🛠️ Technology Stack
 
-- **Framework**: ASP.NET Core Web API  
+- **Framework**: ASP.NET Core Web API (.NET 8.0)
 - **Authentication**: JWT (JSON Web Tokens)  
-- **Authorization**: Role-based authorization  
-- **Architecture**: N-tier Architecture
-- **Database**: MS-SQL Server
+- **Authorization**: Role-based authorization with ASP.NET Core Identity
+- **Architecture**: Clean Architecture (N-tier)
+  - **API Layer**: Controllers and endpoints
+  - **Application Layer**: Services, DTOs, and business logic
+  - **Domain Layer**: Entities and core business models
+  - **Infrastructure Layer**: Data access, repositories, and external services
+- **Database**: MS SQL Server with Entity Framework Core 8.0
 - **ORM**: Entity Framework Core  
+- **API Documentation**: Swagger/OpenAPI
 - **Logging**: Built-in ASP.NET Core logging  
-- **File Upload**: Support for image uploads  
+- **File Upload**: Support for image uploads with validation
+
+## 📁 Project Structure
+
+```
+BookingApp/
+├── Booking-System.API/          # Web API Layer (Controllers, Middleware)
+├── Booking-System.Application/  # Application Logic (Services, DTOs, Interfaces)
+├── Booking-System.Domain/       # Domain Entities
+└── Booking-System.Infrastructure/ # Data Access (Repositories, DbContext)
+```
 
 ## 🚦 Getting Started
 
 ### Prerequisites
-- .NET 6.0 or later  
-- SQL Server (or your preferred database)  
-- Visual Studio 2022 or VS Code  
+- .NET 8.0 SDK or later
+- SQL Server (LocalDB or SQL Server Express)
+- Visual Studio 2022 or VS Code with C# extension
+- Entity Framework Core tools
 
 ### Installation
 
@@ -65,34 +81,49 @@ A comprehensive event booking system built with ASP.NET Core Web API, featuring 
    git clone https://github.com/ZiadHesham225/Booking-System.git
    cd Booking-System\BookingApp
    ```
-3. **Install dependencies**
+
+2. **Install dependencies**
    
    ```bash
    dotnet restore
    ```
-5. **Configure the database**
-   - Update the connection string in `appsettings.json`
-   - Run database migrations:
-     
+
+3. **Configure the database**
+   - Update the connection string in `Booking-System.API/appsettings.json`:
+     ```json
+     "ConnectionStrings": {
+       "DefaultConnection": "Server=.;Database=BookingDb;Integrated Security=True;Trust Server Certificate=True"
+     }
+     ```
+   - Navigate to the API project and apply migrations:
      ```bash
+     cd Booking-System.API
      dotnet ef database update
      ```
-6. **Configure JWT settings**
-   - Update the `JWT` section in `appsettings.json` as follows:
-     
+
+4. **Configure JWT settings**
+   - The JWT settings are already configured in `appsettings.json`:
      ```json
      "JWT": {
-      "Secret": "59c40f6086286987cb4ef17ebbf0bf9fbf5bc9c8909ebfd979f8b30636bc4f1c",
-      "ValidIssuer": "https://localhost:7189",
-      "ValidAudience": "https://localhost:3000"
-      }
+       "Secret": "59c40f6086286987cb4ef17ebbf0bf9fbf5bc9c8909ebfd979f8b30636bc4f1c",
+       "ValidIssuer": "https://localhost:7189",
+       "ValidAudience": "https://localhost:3000"
+     }
      ```
-7. **Run the application**
+
+5. **Run the application**
    ```bash
-   cd Booking-System
+   dotnet run --project Booking-System.API/Booking-System.API.csproj
+   ```
+   Or from the API directory:
+   ```bash
+   cd Booking-System.API
    dotnet run
    ```
-  Then go to : `http://localhost:5178/swagger/index.html`
+   
+6. **Access the API**
+   - Swagger UI: `http://localhost:5178/swagger/index.html`
+   - API Base URL: `http://localhost:5178`
 ## 🔑 Authentication
 This API uses JWT (JSON Web Tokens) for authentication. To access protected endpoints:
 1. Register a new user or login with existing credentials
@@ -115,15 +146,100 @@ This API uses JWT (JSON Web Tokens) for authentication. To access protected endp
 - Password Reset: Secure password recovery process
 
 ## ✉️ Email Configuration
-To enable email features (e.g., password reset), configure the following in your `appsettings.json`:
+
+To enable email features (e.g., password reset), configure the following in `Booking-System.API/appsettings.json`:
+
 ```json
 "EmailSettings": {
   "SmtpServer": "smtp.gmail.com",
   "SmtpPort": 587,
-  "SenderEmail": "Your Email",
-  "SenderPassword": "Your password"
+  "SenderEmail": "your-email@gmail.com",
+  "SenderPassword": "your-app-specific-password"
 }
 ```
+
+**Note**: For Gmail, use an [App Password](https://support.google.com/accounts/answer/185833) instead of your regular password.
+
+## 🗃️ Database Schema
+
+The system includes the following main entities:
+- **Users**: User accounts with ASP.NET Identity
+- **Events**: Event details with categories and locations
+- **Bookings**: User booking records
+- **Coupons**: Discount coupon management
+- **Categories**: Event categorization
+- **TicketTypes**: Different ticket types (Standard, VIP, Student)
+- **EventTicketTypes**: Junction table linking events and ticket types with pricing
+
+## 🧪 Data Seeding
+
+The database is automatically seeded with default data on first run:
+
+### Default Users
+- **Admin**
+  - Email: `admin@booking.com`
+  - Password: `Admin123!`
+  - Role: Admin
+- **Regular User**
+  - Email: `user@booking.com`
+  - Password: `User123!`
+  - Role: User
+
+### Seeded Data
+- **User Roles**: `Admin`, `User`
+- **Ticket Types**: `Standard`, `VIP`, `Student`
+- **Event Categories**: `Concert`, `Workshop`, `Seminar`, `Tech Talk`
+
+## 📝 API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - User login
+- `POST /api/auth/refresh-token` - Refresh JWT token
+- `POST /api/auth/revoke-token` - Revoke refresh token
+- `POST /api/auth/forgot-password` - Request password reset
+- `POST /api/auth/reset-password` - Reset password
+
+### Events
+- `GET /api/events` - Get all events (with pagination & filters)
+- `GET /api/events/{id}` - Get event by ID
+- `POST /api/events` - Create event (Admin only)
+- `PUT /api/events/{id}` - Update event (Admin only)
+- `DELETE /api/events/{id}` - Delete event (Admin only)
+
+### Bookings
+- `GET /api/bookings` - Get user bookings
+- `POST /api/bookings` - Create booking
+- `DELETE /api/bookings/{id}` - Cancel booking
+
+### Coupons
+- `GET /api/coupon` - Get all coupons (Admin only)
+- `POST /api/coupon` - Create coupon (Admin only)
+- `POST /api/coupon/validate` - Validate coupon code
+- `PUT /api/coupon/{id}/toggle` - Toggle coupon status (Admin only)
+
+### Categories & Ticket Types
+- `GET /api/categories` - Get all categories
+- `GET /api/tickettype` - Get all ticket types
+- Category and ticket type management (Admin only)
+
+For detailed API documentation, visit the Swagger UI at `/swagger` when running the application.
+
+## ✉️ Email Configuration
+
+To enable email features (e.g., password reset), configure the following in `Booking-System.API/appsettings.json`:
+
+```json
+"EmailSettings": {
+  "SmtpServer": "smtp.gmail.com",
+  "SmtpPort": 587,
+  "SenderEmail": "your-email@gmail.com",
+  "SenderPassword": "your-app-specific-password"
+}
+```
+
+**Note**: For Gmail, use an [App Password](https://support.google.com/accounts/answer/185833) instead of your regular password.
+
 ## 🧪 Data Seeding
 This project includes default seed data for:
 - Admin and regular users
@@ -141,12 +257,40 @@ Default Users:
 
 ## 🔮 Future Enhancements
 
-- Email notifications for bookings
-- Payment gateway integration
-- Real-time availability updates
-- Mobile app support
-- Advanced reporting features
-- Multi-language support
+- ✉️ Email notifications for bookings and confirmations
+- 💳 Payment gateway integration (Stripe, PayPal)
+- 🔔 Real-time availability updates with SignalR
+- 📱 Mobile app support (iOS/Android)
+- 📊 Advanced reporting and analytics dashboard
+- 🌍 Multi-language support (i18n)
+- 📧 Email verification for new registrations
+- 🔍 Enhanced search with Elasticsearch
+- 📅 Calendar view for events
+- ⭐ Event ratings and reviews
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 👤 Author
+
+**Ziad Hesham**
+- GitHub: [@ZiadHesham225](https://github.com/ZiadHesham225)
+
+## 📞 Support
+
+For support, email your-email@example.com or open an issue in the repository.
+
 ---
 
 <p align="center">Built with ❤️ using ASP.NET Core</p>

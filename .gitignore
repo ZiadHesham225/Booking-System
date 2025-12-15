@@ -1,0 +1,17 @@
+# Build output
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+
+# Sensitive configuration files
+appsettings.Development.json
+appsettings.Production.json
+
+# User uploaded files
+**/wwwroot/images/*
+
+# Logs
+*.log
