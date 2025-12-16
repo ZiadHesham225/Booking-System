@@ -40,7 +40,7 @@ namespace Booking_System.Infrastructure.Services
             {
                 await client.ConnectAsync(
                     _config["EmailSettings:SmtpServer"],
-                    int.Parse(_config["EmailSettings:SmtpPort"]),
+                    int.Parse(_config["EmailSettings:SmtpPort"] ?? "587"),
                     SecureSocketOptions.StartTls
                 );
 
