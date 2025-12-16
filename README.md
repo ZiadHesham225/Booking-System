@@ -278,19 +278,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 👤 Author
-
-**Ziad Hesham**
-- GitHub: [@ZiadHesham225](https://github.com/ZiadHesham225)
-
-## 📞 Support
-
-For support, email your-email@example.com or open an issue in the repository.
-
 ---
 
 <p align="center">Built with ❤️ using ASP.NET Core</p>
