@@ -27,6 +27,7 @@ namespace Booking_System.Infrastructure.Repositories
         public async Task<PaginatedResponse<Event>> GetAllEventsAsync(int pageIndex = 1, int pageSize = 20)
         {
             var query = _context.Events
+                .AsNoTracking()
                 .Include(e => e.Category)
                 .Include(e => e.EventTicketTypes)
                     .ThenInclude(ett => ett.TicketType);
@@ -43,9 +44,10 @@ namespace Booking_System.Infrastructure.Repositories
             };
         }
 
-        public async Task<Event> GetEventByIdAsync(int id)
+        public async Task<Event?> GetEventByIdAsync(int id)
         {
             return await _context.Events
+                .AsNoTracking()
                 .Include(e => e.Category)
                 .Include(e => e.EventTicketTypes)
                     .ThenInclude(ett => ett.TicketType)
@@ -55,6 +57,7 @@ namespace Booking_System.Infrastructure.Repositories
         public async Task<PaginatedResponse<Event>> GetUpcomingEventsAsync(int pageIndex = 1, int pageSize = 20)
         {
             var query = _context.Events
+                .AsNoTracking()
                 .Include(e => e.Category)
                 .Include(e => e.EventTicketTypes)
                     .ThenInclude(ett => ett.TicketType)
@@ -79,6 +82,7 @@ namespace Booking_System.Infrastructure.Repositories
         public async Task<PaginatedResponse<Event>> SearchEventsAsync(EventSearchHandler searchHandler, int pageIndex = 1, int pageSize = 20)
         {
             IQueryable<Event> events = dbSet
+                .AsNoTracking()
                 .Include(e => e.Category)
                 .Include(e => e.EventTicketTypes)
                     .ThenInclude(ett => ett.TicketType);
@@ -144,6 +148,7 @@ namespace Booking_System.Infrastructure.Repositories
         public async Task<List<TopEventDto>> GetTopBookedEventsAsync(int take)
         {
             return await _context.Events
+                .AsNoTracking()
                 .Select(e => new TopEventDto
                 {
                     EventId = e.EventId,

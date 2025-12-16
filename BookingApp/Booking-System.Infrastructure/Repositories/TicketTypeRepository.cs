@@ -14,12 +14,17 @@ namespace Booking_System.Infrastructure.Repositories
 
         public async Task<IEnumerable<TicketType>> GetActiveTicketTypesAsync()
         {
-            return await dbSet.Where(tt => tt.IsActive).ToListAsync();
+            return await dbSet
+                .AsNoTracking()
+                .Where(tt => tt.IsActive)
+                .ToListAsync();
         }
 
-        public async Task<TicketType> GetByNameAsync(string name)
+        public async Task<TicketType?> GetByNameAsync(string name)
         {
-            return await dbSet.FirstOrDefaultAsync(tt => tt.Name == name);
+            return await dbSet
+                .AsNoTracking()
+                .FirstOrDefaultAsync(tt => tt.Name == name);
         }
     }
 }

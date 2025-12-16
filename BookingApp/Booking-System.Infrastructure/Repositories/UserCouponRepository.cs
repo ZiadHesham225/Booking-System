@@ -1,6 +1,5 @@
 using Booking_System.Infrastructure.Data;
 using Booking_System.Application.Interfaces;
-using Booking_System.Application.Interfaces;
 using Booking_System.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +14,7 @@ namespace Booking_System.Infrastructure.Repositories
         public async Task<IEnumerable<UserCoupon>> GetUserCouponsAsync(string userId)
         {
             return await dbSet
+                .AsNoTracking()
                 .Include(uc => uc.Coupon)
                 .Where(uc => uc.UserId == userId)
                 .ToListAsync();

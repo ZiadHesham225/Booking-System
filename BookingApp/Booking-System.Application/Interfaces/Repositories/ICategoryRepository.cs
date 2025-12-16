@@ -4,7 +4,7 @@ namespace Booking_System.Application.Interfaces
 {
     public interface ICategoryRepository : IGenericRepository<Category>
     {
-        Task<Category> GetCategoryByNameAsync(string name);
+        Task<Category?> GetCategoryByNameAsync(string name);
     }
 }
 
