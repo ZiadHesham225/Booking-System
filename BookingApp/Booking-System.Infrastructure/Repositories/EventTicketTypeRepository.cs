@@ -1,6 +1,5 @@
 using Booking_System.Infrastructure.Data;
 using Booking_System.Application.Interfaces;
-using Booking_System.Application.Interfaces;
 using Booking_System.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,14 +14,16 @@ namespace Booking_System.Infrastructure.Repositories
         public async Task<IEnumerable<EventTicketType>> GetByEventIdAsync(int eventId)
         {
             return await dbSet
+                .AsNoTracking()
                 .Include(ett => ett.TicketType)
                 .Where(ett => ett.EventId == eventId)
                 .ToListAsync();
         }
 
-        public async Task<EventTicketType> GetByEventAndTicketTypeAsync(int eventId, int ticketTypeId)
+        public async Task<EventTicketType?> GetByEventAndTicketTypeAsync(int eventId, int ticketTypeId)
         {
             return await dbSet
+                .AsNoTracking()
                 .Include(ett => ett.TicketType)
                 .FirstOrDefaultAsync(ett => ett.EventId == eventId && ett.TicketTypeId == ticketTypeId);
         }

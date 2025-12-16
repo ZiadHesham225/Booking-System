@@ -1,6 +1,5 @@
 using Booking_System.Infrastructure.Data;
 using Booking_System.Application.Interfaces;
-using Booking_System.Application.Interfaces;
 using Booking_System.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,14 +11,17 @@ namespace Booking_System.Infrastructure.Repositories
         {
         }
 
-        public async Task<Coupon> GetByCodeAsync(string code)
+        public async Task<Coupon?> GetByCodeAsync(string code)
         {
-            return await dbSet.FirstOrDefaultAsync(c => c.Code == code);
+            return await dbSet
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Code == code);
         }
 
         public async Task<IEnumerable<Coupon>> GetActiveCouponsAsync()
         {
             return await dbSet
+                .AsNoTracking()
                 .Where(c => c.IsActive &&
                            (c.ExpiryDate == null || c.ExpiryDate > DateTime.UtcNow) &&
                            (c.UsageLimit == null || c.TimesUsed < c.UsageLimit))
@@ -28,20 +30,13 @@ namespace Booking_System.Infrastructure.Repositories
 
         public async Task<bool> IsValidCouponAsync(string code, decimal orderValue)
         {
-            var coupon = await GetByCodeAsync(code);
-            if (coupon == null || !coupon.IsActive)
-                return false;
-
-            if (coupon.ExpiryDate.HasValue && coupon.ExpiryDate < DateTime.UtcNow)
-                return false;
-
-            if (coupon.UsageLimit.HasValue && coupon.TimesUsed >= coupon.UsageLimit)
-                return false;
-
-            if (coupon.MinOrderValue.HasValue && orderValue < coupon.MinOrderValue)
-                return false;
-
-            return true;
+            return await dbSet
+                .AsNoTracking()
+                .AnyAsync(c => c.Code == code &&
+                              c.IsActive &&
+                              (!c.ExpiryDate.HasValue || c.ExpiryDate > DateTime.UtcNow) &&
+                              (!c.UsageLimit.HasValue || c.TimesUsed < c.UsageLimit) &&
+                              (!c.MinOrderValue.HasValue || orderValue >= c.MinOrderValue));
         }
 
         public async Task IncrementUsageAsync(int couponId)

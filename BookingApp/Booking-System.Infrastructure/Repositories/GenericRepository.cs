@@ -1,6 +1,5 @@
 using Booking_System.Infrastructure.Data;
 using Booking_System.Application.Interfaces;
-using Booking_System.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Booking_System.Infrastructure.Repositories
@@ -33,7 +32,7 @@ namespace Booking_System.Infrastructure.Repositories
 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await dbSet.ToListAsync();
+            return await dbSet.AsNoTracking().ToListAsync();
         }
 
         public async Task<T> GetByIdAsync(object id)

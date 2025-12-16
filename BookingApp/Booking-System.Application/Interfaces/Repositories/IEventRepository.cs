@@ -9,7 +9,7 @@ namespace Booking_System.Application.Interfaces
     {
         Task<PaginatedResponse<Event>> GetAllEventsAsync(int pageIndex = 1, int pageSize = 20);
         Task<PaginatedResponse<Event>> SearchEventsAsync(EventSearchHandler searchHandler, int pageIndex = 1, int pageSize = 20);
-        Task<Event> GetEventByIdAsync(int id);
+        Task<Event?> GetEventByIdAsync(int id);
         Task<Event> CreateEventAsync(Event eventEntity);
         Task<bool> IsAlreadyBooked(string userId, int eventId);
         Task<HashSet<int>> GetUserBookedEventIdsAsync(string userId);

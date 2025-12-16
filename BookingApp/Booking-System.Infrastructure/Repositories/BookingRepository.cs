@@ -17,10 +17,6 @@ namespace Booking_System.Infrastructure.Repositories
         public async Task<IEnumerable<BookingDto>> GetUserBookingsAsync(string userId)
         {
             return await _context.Bookings
-        .Include(b => b.Event)
-        .Include(b => b.EventTicketType)
-            .ThenInclude(ett => ett.TicketType)
-        .Include(b => b.Coupon)
         .Where(b => b.UserId == userId)
         .OrderByDescending(b => b.BookingDate)
         .AsNoTracking()
@@ -44,14 +40,11 @@ namespace Booking_System.Infrastructure.Repositories
         .ToListAsync();
         }
 
-        public async Task<BookingDto> GetBookingDetailsByIdAsync(int bookingId, string userId)
+        public async Task<BookingDto?> GetBookingDetailsByIdAsync(int bookingId, string userId)
         {
             return await _context.Bookings
-        .Include(b => b.Event)
-        .Include(b => b.EventTicketType)
-            .ThenInclude(ett => ett.TicketType)
-        .Include(b => b.Coupon)
         .AsNoTracking()
+        .Where(b => b.BookingId == bookingId && b.UserId == userId)
         .Select(b => new BookingDto
         {
             BookingId = b.BookingId,
@@ -69,17 +62,13 @@ namespace Booking_System.Infrastructure.Repositories
             EventTicketTypeId = b.EventTicketType.Id,
             TicketTypeName = b.EventTicketType.TicketType.Name
         })
-        .FirstOrDefaultAsync(b => b.BookingId == bookingId && b.UserId == userId);
+        .FirstOrDefaultAsync();
         }
-        public async Task<BookingDto> GetBookingWithDetailsAsync(int bookingId)
+        public async Task<BookingDto?> GetBookingWithDetailsAsync(int bookingId)
         {
             return await _context.Bookings
-        .Include(b => b.Event)
-        .Include(b => b.EventTicketType)
-            .ThenInclude(ett => ett.TicketType)
-        .Include(b => b.User)
-        .Include(b => b.Coupon)
         .AsNoTracking()
+        .Where(b => b.BookingId == bookingId)
         .Select(b => new BookingDto
         {
             BookingId = b.BookingId,
@@ -97,7 +86,7 @@ namespace Booking_System.Infrastructure.Repositories
             EventTicketTypeId = b.EventTicketType.Id,
             TicketTypeName = b.EventTicketType.TicketType.Name
         })
-        .FirstOrDefaultAsync(b => b.BookingId == bookingId);
+        .FirstOrDefaultAsync();
         }
         public async Task CreateBookingAsync(Booking booking)
         {
@@ -114,7 +103,10 @@ namespace Booking_System.Infrastructure.Repositories
         }
         public async Task<IEnumerable<Booking>> GetByEventIdAsync(int eventId)
         {
-            return await _context.Bookings.Where(b => b.EventId == eventId).ToListAsync();
+            return await _context.Bookings
+                .AsNoTracking()
+                .Where(b => b.EventId == eventId)
+                .ToListAsync();
         }
         public Task<int> CountAsync(Expression<Func<Booking, bool>>? predicate = null)
         {
