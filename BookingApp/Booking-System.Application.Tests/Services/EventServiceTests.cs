@@ -82,8 +82,8 @@ namespace Booking_System.Application.Tests.Services
                 .ReturnsAsync("images/Events/event.jpg");
             _mockEventRepository.Setup(x => x.CreateEventAsync(It.IsAny<Event>()))
                 .ReturnsAsync(createdEvent);
-            _mockEventTicketTypeRepository.Setup(x => x.CreateAsync(It.IsAny<EventTicketType>()))
-                .ReturnsAsync((EventTicketType ett) => ett);
+            _mockEventTicketTypeRepository.Setup(x => x.CreateRangeAsync(It.IsAny<IEnumerable<EventTicketType>>()))
+                .Returns(Task.CompletedTask);
             _mockUnitOfWork.Setup(x => x.CommitAsync()).Returns(Task.CompletedTask);
 
             // Act
@@ -93,7 +93,7 @@ namespace Booking_System.Application.Tests.Services
             result.Should().NotBeNull();
             result.Title.Should().Be(eventDto.Title);
             _mockEventRepository.Verify(x => x.CreateEventAsync(It.IsAny<Event>()), Times.Once);
-            _mockEventTicketTypeRepository.Verify(x => x.CreateAsync(It.IsAny<EventTicketType>()), Times.Exactly(2));
+            _mockEventTicketTypeRepository.Verify(x => x.CreateRangeAsync(It.IsAny<IEnumerable<EventTicketType>>()), Times.Once);
             _mockUnitOfWork.Verify(x => x.CommitAsync(), Times.Once);
         }
 
