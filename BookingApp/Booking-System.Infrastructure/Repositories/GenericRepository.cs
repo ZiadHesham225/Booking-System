@@ -35,10 +35,10 @@ namespace Booking_System.Infrastructure.Repositories
             }
         }
 
-        public async Task DeleteRangeAsync(IEnumerable<T> entities)
+        public Task DeleteRangeAsync(IEnumerable<T> entities)
         {
             dbSet.RemoveRange(entities);
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public async Task<IEnumerable<T>> GetAllAsync()
