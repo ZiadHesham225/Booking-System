@@ -147,13 +147,15 @@ namespace Booking_System.Infrastructure.Repositories
 
         public async Task<List<TopEventDto>> GetTopBookedEventsAsync(int take)
         {
-            return await _context.Events
+            // Optimized query to avoid N+1 problem with SelectMany
+            return await _context.Bookings
                 .AsNoTracking()
-                .Select(e => new TopEventDto
+                .GroupBy(b => new { b.EventId, b.Event.Title })
+                .Select(g => new TopEventDto
                 {
-                    EventId = e.EventId,
-                    Title = e.Title,
-                    TotalBookings = e.EventTicketTypes.SelectMany(t => t.Bookings).Count()
+                    EventId = g.Key.EventId,
+                    Title = g.Key.Title,
+                    TotalBookings = g.Count()
                 })
                 .OrderByDescending(e => e.TotalBookings)
                 .Take(take)

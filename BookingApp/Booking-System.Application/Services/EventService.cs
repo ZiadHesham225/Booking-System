@@ -38,18 +38,17 @@ namespace Booking_System.Application.Services
 
                 var created = await _unitOfWork.Events.CreateEventAsync(newEvent);
 
-                foreach (var ticketTypeDto in EventTicketTypes)
+                // Bulk create event ticket types to avoid N+1 query problem
+                var eventTicketTypesToCreate = EventTicketTypes.Select(ticketTypeDto => new EventTicketType
                 {
-                    var eventTicketType = new EventTicketType
-                    {
-                        Event = created,
-                        TicketTypeId = ticketTypeDto.TicketTypeId,
-                        Price = ticketTypeDto.Price,
-                        TotalSeats = ticketTypeDto.TotalSeats,
-                        AvailableSeats = ticketTypeDto.TotalSeats
-                    };
-                    await _unitOfWork.EventTicketTypes.CreateAsync(eventTicketType);
-                }
+                    Event = created,
+                    TicketTypeId = ticketTypeDto.TicketTypeId,
+                    Price = ticketTypeDto.Price,
+                    TotalSeats = ticketTypeDto.TotalSeats,
+                    AvailableSeats = ticketTypeDto.TotalSeats
+                }).ToList();
+
+                await _unitOfWork.EventTicketTypes.CreateRangeAsync(eventTicketTypesToCreate);
 
                 await _unitOfWork.CommitAsync();
 
@@ -255,14 +254,20 @@ namespace Booking_System.Application.Services
                 if (existingEvent == null)
                     throw new ArgumentException("Event not found.");
 
+                // Batch fetch all event ticket types to avoid N+1 query problem
+                var ticketTypeIds = ticketTypes.Select(t => t.TicketTypeId).ToList();
+                var allEventTicketTypes = await _unitOfWork.EventTicketTypes.GetByEventIdAsync(eventId);
+                var eventTicketTypesDict = allEventTicketTypes
+                    .Where(ett => ticketTypeIds.Contains(ett.TicketTypeId))
+                    .ToDictionary(ett => ett.TicketTypeId);
+
                 foreach (var ticketTypeDto in ticketTypes)
                 {
-                    var eventTicketType = await _unitOfWork.EventTicketTypes.GetByEventAndTicketTypeAsync(eventId, ticketTypeDto.TicketTypeId);
-                    if (eventTicketType != null)
+                    if (eventTicketTypesDict.TryGetValue(ticketTypeDto.TicketTypeId, out var eventTicketType))
                     {
                         eventTicketType.Price = ticketTypeDto.Price;
-                        eventTicketType.TotalSeats = ticketTypeDto.TotalSeats;
                         var seatDifference = ticketTypeDto.TotalSeats - eventTicketType.TotalSeats;
+                        eventTicketType.TotalSeats = ticketTypeDto.TotalSeats;
                         eventTicketType.AvailableSeats = Math.Max(0, eventTicketType.AvailableSeats + seatDifference);
 
                         _unitOfWork.EventTicketTypes.Update(eventTicketType);
@@ -281,16 +286,19 @@ namespace Booking_System.Application.Services
         {
             try
             {
+                // Bulk delete bookings and event ticket types to avoid N+1 query problem
                 var bookings = await _unitOfWork.Bookings.GetByEventIdAsync(id);
-                foreach (var booking in bookings)
+                if (bookings.Any())
                 {
-                    await _unitOfWork.Bookings.DeleteAsync(booking.BookingId);
+                    await _unitOfWork.Bookings.DeleteRangeAsync(bookings);
                 }
+
                 var eventTicketTypes = await _unitOfWork.EventTicketTypes.GetByEventIdAsync(id);
-                foreach (var eventTicketType in eventTicketTypes)
+                if (eventTicketTypes.Any())
                 {
-                    await _unitOfWork.EventTicketTypes.DeleteAsync(eventTicketType.Id);
+                    await _unitOfWork.EventTicketTypes.DeleteRangeAsync(eventTicketTypes);
                 }
+
                 await _unitOfWork.Events.DeleteEventAsync(id);
                 await _unitOfWork.CommitAsync();
             }

@@ -98,6 +98,33 @@ namespace Booking_System.Infrastructure.Data
                 entity.HasIndex(uc => new { uc.UserId, uc.CouponId })
                     .IsUnique();
             });
+
+            // Performance optimization: Add indexes on frequently queried columns
+            modelBuilder.Entity<Booking>()
+                .HasIndex(b => b.UserId);
+
+            modelBuilder.Entity<Booking>()
+                .HasIndex(b => b.EventId);
+
+            modelBuilder.Entity<Booking>()
+                .HasIndex(b => b.BookingDate);
+
+            modelBuilder.Entity<Event>()
+                .HasIndex(e => e.CategoryId);
+
+            modelBuilder.Entity<Event>()
+                .HasIndex(e => e.StartDateTime);
+
+            modelBuilder.Entity<Event>()
+                .HasIndex(e => e.City);
+
+            modelBuilder.Entity<Coupon>()
+                .HasIndex(c => c.Code)
+                .IsUnique();
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasIndex(rt => rt.UserId);
+
             BookingSystemSeed.SeedModelData(modelBuilder);
         }
 
