@@ -88,13 +88,7 @@ namespace Booking_System.Application.Services
                 AccessToken = tokens.AccessToken,
                 RefreshToken = tokens.RefreshToken,
                 AccessTokenExpiration = tokens.AccessTokenExpiration,
-                RefreshTokenExpiration = tokens.RefreshTokenExpiration,
-                User = new UserDto
-                {
-                    Id = user.Id,
-                    FullName = $"{user.FirstName} {user.LastName}",
-                    Email = user.Email
-                }
+                RefreshTokenExpiration = tokens.RefreshTokenExpiration
             };
         }
 

@@ -184,12 +184,6 @@ namespace Booking_System.API.Tests.Controllers
                 RefreshToken = "refresh-token-456",
                 AccessTokenExpiration = DateTime.UtcNow.AddHours(3),
                 RefreshTokenExpiration = DateTime.UtcNow.AddDays(7),
-                User = new UserDto
-                {
-                    Id = "user-123",
-                    FullName = "Test User",
-                    Email = "test@example.com"
-                }
             };
 
             _mockAuthService.Setup(x => x.LoginAsync(loginDto))

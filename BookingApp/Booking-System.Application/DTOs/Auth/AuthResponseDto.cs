@@ -6,7 +6,6 @@ namespace Booking_System.Application.DTOs.Auth
         public string RefreshToken { get; set; }
         public DateTime AccessTokenExpiration { get; set; }
         public DateTime RefreshTokenExpiration { get; set; }
-        public UserDto User { get; set; }
     }
 }
 

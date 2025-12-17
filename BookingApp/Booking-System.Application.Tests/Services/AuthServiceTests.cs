@@ -79,9 +79,6 @@ namespace Booking_System.Application.Tests.Services
             result.Should().NotBeNull();
             result.AccessToken.Should().Be("access-token-123");
             result.RefreshToken.Should().Be("refresh-token-456");
-            result.User.Should().NotBeNull();
-            result.User.Email.Should().Be(user.Email);
-            result.User.Id.Should().Be(user.Id);
         }
 
         /// <summary>
