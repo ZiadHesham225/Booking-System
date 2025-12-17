@@ -21,6 +21,11 @@ namespace Booking_System.Infrastructure.Repositories
             return newEntity.Entity;
         }
 
+        public async Task CreateRangeAsync(IEnumerable<T> entities)
+        {
+            await dbSet.AddRangeAsync(entities);
+        }
+
         public async Task DeleteAsync(object id)
         {
             var entity = await GetByIdAsync(id);
@@ -28,6 +33,12 @@ namespace Booking_System.Infrastructure.Repositories
             {
                 dbSet.Remove(entity);
             }
+        }
+
+        public async Task DeleteRangeAsync(IEnumerable<T> entities)
+        {
+            dbSet.RemoveRange(entities);
+            await Task.CompletedTask;
         }
 
         public async Task<IEnumerable<T>> GetAllAsync()
