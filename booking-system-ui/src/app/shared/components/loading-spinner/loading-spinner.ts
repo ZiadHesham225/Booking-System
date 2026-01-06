@@ -1,0 +1,21 @@
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-loading-spinner',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './loading-spinner.html',
+  styleUrl: './loading-spinner.scss',
+})
+export class LoadingSpinner {
+  @Input() size: 'sm' | 'md' | 'lg' = 'md';
+  @Input() message?: string;
+  @Input() containerClass = '';
+
+  sizeClasses: Record<string, string> = {
+    sm: 'w-5 h-5',
+    md: 'w-8 h-8',
+    lg: 'w-12 h-12'
+  };
+}

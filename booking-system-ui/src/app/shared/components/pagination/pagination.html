@@ -1,0 +1,71 @@
+<div class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
+  <div class="flex-1 flex justify-between sm:hidden">
+    <button (click)="onPageChange(currentPage - 1)"
+            [disabled]="!hasPreviousPage"
+            class="btn-outline text-sm"
+            [class.opacity-50]="!hasPreviousPage"
+            [class.cursor-not-allowed]="!hasPreviousPage">
+      Previous
+    </button>
+    <button (click)="onPageChange(currentPage + 1)"
+            [disabled]="!hasNextPage"
+            class="btn-outline text-sm"
+            [class.opacity-50]="!hasNextPage"
+            [class.cursor-not-allowed]="!hasNextPage">
+      Next
+    </button>
+  </div>
+  
+  <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+    <div>
+      <p class="text-sm text-secondary-700">
+        Showing page <span class="font-medium">{{ currentPage }}</span> of 
+        <span class="font-medium">{{ totalPages }}</span>
+        (<span class="font-medium">{{ totalItems }}</span> total items)
+      </p>
+    </div>
+    
+    <div>
+      <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+        <!-- Previous Button -->
+        <button (click)="onPageChange(currentPage - 1)"
+                [disabled]="!hasPreviousPage"
+                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-secondary-500 hover:bg-gray-50"
+                [class.opacity-50]="!hasPreviousPage"
+                [class.cursor-not-allowed]="!hasPreviousPage">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        
+        <!-- Page Numbers -->
+        @for (page of visiblePages; track page) {
+          @if (page === '...') {
+            <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-secondary-700">
+              ...
+            </span>
+          } @else {
+            <button (click)="onPageChange(+page)"
+                    class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+                    [ngClass]="currentPage === page 
+                      ? 'z-10 bg-primary-50 border-primary-500 text-primary-600' 
+                      : 'bg-white border-gray-300 text-secondary-500 hover:bg-gray-50'">
+              {{ page }}
+            </button>
+          }
+        }
+        
+        <!-- Next Button -->
+        <button (click)="onPageChange(currentPage + 1)"
+                [disabled]="!hasNextPage"
+                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-secondary-500 hover:bg-gray-50"
+                [class.opacity-50]="!hasNextPage"
+                [class.cursor-not-allowed]="!hasNextPage">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </nav>
+    </div>
+  </div>
+</div>

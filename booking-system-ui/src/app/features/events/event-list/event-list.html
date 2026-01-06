@@ -1,0 +1,66 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Discover Events</h1>
+    <p class="text-gray-600">Find and book tickets for amazing events near you</p>
+  </div>
+
+  <!-- Search Component -->
+  <app-event-search 
+    [categories]="categories()" 
+    (search)="onSearch($event)">
+  </app-event-search>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="flex justify-center py-16">
+      <app-loading-spinner size="lg" message="Loading events..."></app-loading-spinner>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error() && !loading()) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+      <svg class="w-12 h-12 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+      <p class="text-red-700 font-medium">{{ error() }}</p>
+      <button (click)="loadEvents()" class="btn-primary mt-4">Try Again</button>
+    </div>
+  }
+
+  <!-- Events Grid -->
+  @if (!loading() && !error()) {
+    @if (events().length > 0) {
+      <div class="mb-4 text-gray-600">
+        <span class="font-medium">{{ totalCount() }}</span> events found
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        @for (event of events(); track event.eventId) {
+          <app-event-card [event]="event"></app-event-card>
+        }
+      </div>
+
+      <!-- Pagination -->
+      @if (totalPages() > 1) {
+        <div class="mt-8">
+          <app-pagination
+            [currentPage]="currentPage()"
+            [totalPages]="totalPages()"
+            [totalItems]="totalCount()"
+            [pageSize]="pageSize()"
+            (pageChange)="onPageChange($event)">
+          </app-pagination>
+        </div>
+      }
+    } @else {
+      <div class="text-center py-16">
+        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">No Events Found</h3>
+        <p class="text-gray-500">Try adjusting your search filters or check back later for new events.</p>
+      </div>
+    }
+  }
+</div>

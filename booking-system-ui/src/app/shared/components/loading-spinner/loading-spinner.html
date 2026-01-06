@@ -1,0 +1,8 @@
+<div class="flex items-center justify-center" [class]="containerClass">
+  <div class="animate-spin rounded-full border-t-2 border-b-2 border-primary-600"
+       [ngClass]="sizeClasses[size]">
+  </div>
+  @if (message) {
+    <span class="ml-3 text-secondary-600">{{ message }}</span>
+  }
+</div>

@@ -1,0 +1,188 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Coupon Management</h1>
+      <p class="text-gray-600">Create and manage discount coupons</p>
+    </div>
+    <button (click)="openCreateModal()" class="btn-primary mt-4 md:mt-0">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Add Coupon
+    </button>
+  </div>
+
+  <!-- Error Message -->
+  @if (error()) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+      <p class="text-red-700">{{ error() }}</p>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="flex justify-center py-16">
+      <app-loading-spinner size="lg" message="Loading coupons..."></app-loading-spinner>
+    </div>
+  }
+
+  <!-- Coupons Table -->
+  @if (!loading()) {
+    @if (coupons().length > 0) {
+      <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Code</th>
+                <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Discount</th>
+                <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Usage</th>
+                <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Expires</th>
+                <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Status</th>
+                <th class="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (coupon of coupons(); track coupon.couponId) {
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                  <td class="py-3 px-4">
+                    <span class="font-mono font-medium text-primary-600">{{ coupon.code }}</span>
+                  </td>
+                  <td class="py-3 px-4">
+                    <span class="font-medium">{{ coupon.discountPercent }}%</span>
+                  </td>
+                  <td class="py-3 px-4 text-sm text-gray-600">
+                    {{ coupon.timesUsed || 0 }} / {{ coupon.usageLimit || '∞' }}
+                  </td>
+                  <td class="py-3 px-4 text-sm" [class]="isExpired(coupon.expiryDate) ? 'text-red-500' : 'text-gray-600'">
+                    {{ coupon.expiryDate ? (coupon.expiryDate | date:'MMM d, yyyy') : 'No expiry' }}
+                  </td>
+                  <td class="py-3 px-4">
+                    @if (!coupon.isActive) {
+                      <span class="badge badge-secondary">Inactive</span>
+                    } @else if (isExpired(coupon.expiryDate)) {
+                      <span class="badge badge-error">Expired</span>
+                    } @else {
+                      <span class="badge badge-success">Active</span>
+                    }
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="flex items-center justify-end gap-2">
+                      <button (click)="openEditModal(coupon)" class="text-blue-500 hover:text-blue-700" title="Edit">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                      </button>
+                      <button (click)="openDeleteModal(coupon)" class="text-red-500 hover:text-red-700" title="Delete">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    } @else {
+      <div class="text-center py-16">
+        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+        </svg>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">No Coupons</h3>
+        <p class="text-gray-500 mb-4">Get started by creating your first coupon.</p>
+        <button (click)="openCreateModal()" class="btn-primary">Add Coupon</button>
+      </div>
+    }
+  }
+
+  <!-- Create/Edit Modal -->
+  @if (showModal()) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">
+          {{ editingCoupon() ? 'Edit Coupon' : 'Create Coupon' }}
+        </h3>
+        
+        <form [formGroup]="couponForm" (ngSubmit)="onSubmit()">
+          <div class="space-y-4">
+            <div>
+              <label class="form-label">Code *</label>
+              <input type="text" formControlName="code" class="form-input font-mono" placeholder="SUMMER20" />
+              @if (couponForm.get('code')?.invalid && couponForm.get('code')?.touched) {
+                <p class="text-red-500 text-sm mt-1">Code is required</p>
+              }
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Discount % *</label>
+                <input type="number" formControlName="discountPercent" class="form-input" min="0.01" max="100" step="0.01" />
+              </div>
+
+              <div>
+                <label class="form-label">Min Order Value</label>
+                <input type="number" formControlName="minOrderValue" class="form-input" min="0" step="0.01" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Usage Limit</label>
+                <input type="number" formControlName="usageLimit" class="form-input" min="1" />
+              </div>
+
+              <div>
+                <label class="form-label">Expiry Date</label>
+                <input type="date" formControlName="expiryDate" class="form-input" />
+              </div>
+            </div>
+
+            <div class="flex items-center">
+              <input type="checkbox" formControlName="isActive" id="isActive" class="form-checkbox" />
+              <label for="isActive" class="ml-2 text-sm text-gray-700">Active</label>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-6">
+            <button type="button" (click)="closeModal()" class="btn-secondary flex-1" [disabled]="submitting()">
+              Cancel
+            </button>
+            <button type="submit" class="btn-primary flex-1" [disabled]="couponForm.invalid || submitting()">
+              @if (submitting()) {
+                Saving...
+              } @else {
+                {{ editingCoupon() ? 'Update' : 'Create' }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Delete Modal -->
+  @if (deleteModal().show) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">Delete Coupon?</h3>
+        <p class="text-gray-600 mb-6">Are you sure you want to delete coupon <strong>{{ deleteModal().coupon?.code }}</strong>? This action cannot be undone.</p>
+        
+        <div class="flex gap-3">
+          <button (click)="closeDeleteModal()" class="btn-secondary flex-1" [disabled]="deleting()">
+            Cancel
+          </button>
+          <button (click)="confirmDelete()" class="btn-primary flex-1 bg-red-600 hover:bg-red-700" [disabled]="deleting()">
+            @if (deleting()) {
+              Deleting...
+            } @else {
+              Delete
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

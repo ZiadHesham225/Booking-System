@@ -1,0 +1,132 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="flex justify-center py-16">
+      <app-loading-spinner size="lg" message="Loading booking details..."></app-loading-spinner>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error() && !loading() && !booking()) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+      <p class="text-red-700 font-medium">{{ error() }}</p>
+      <a routerLink="/bookings" class="btn-primary mt-4 inline-block">Back to My Bookings</a>
+    </div>
+  }
+
+  <!-- Booking Details -->
+  @if (booking() && !loading()) {
+    <div class="max-w-4xl mx-auto">
+      <!-- Header -->
+      <div class="mb-8">
+        <a routerLink="/bookings" class="inline-flex items-center text-primary-600 hover:text-primary-700 mb-4">
+          <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Back to My Bookings
+        </a>
+        <h1 class="text-3xl font-bold text-gray-900">Booking Details</h1>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Event Info -->
+          <div class="card p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Event Information</h2>
+            <div>
+              <h3 class="text-xl font-medium text-gray-900">{{ booking()!.eventName }}</h3>
+              <a [routerLink]="['/events', booking()!.eventId]" class="text-primary-600 hover:text-primary-700 text-sm mt-3 inline-block">
+                View Event Details →
+              </a>
+            </div>
+          </div>
+
+          <!-- Booking Info -->
+          <div class="card p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Booking Information</h2>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <span class="text-sm text-gray-500">Booking ID</span>
+                <p class="font-medium text-gray-900">#{{ booking()!.bookingId }}</p>
+              </div>
+              <div>
+                <span class="text-sm text-gray-500">Booked On</span>
+                <p class="font-medium text-gray-900">{{ booking()!.bookingDate | date:'MMM d, yyyy' }}</p>
+              </div>
+              <div>
+                <span class="text-sm text-gray-500">Ticket Type</span>
+                <p class="font-medium text-gray-900">{{ booking()!.ticketTypeName }}</p>
+              </div>
+              <div>
+                <span class="text-sm text-gray-500">Quantity</span>
+                <p class="font-medium text-gray-900">{{ booking()!.numTickets }} ticket(s)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Sidebar -->
+        <div class="lg:col-span-1">
+          <div class="card p-6 sticky top-4">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Payment Summary</h2>
+
+            <div class="space-y-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">{{ booking()!.numTickets }} x {{ booking()!.ticketTypeName }}</span>
+              </div>
+              
+              @if (booking()!.couponCode) {
+                <div class="flex justify-between text-green-600">
+                  <span>Coupon ({{ booking()!.couponCode }})</span>
+                  <span>-{{ booking()!.couponDiscountPercent }}%</span>
+                </div>
+              }
+              
+              <div class="border-t border-gray-200 pt-3 flex justify-between text-lg font-bold">
+                <span>Total Paid</span>
+                <span class="text-primary-600">{{ booking()!.totalPrice | currency }}</span>
+              </div>
+            </div>
+
+            <button 
+              (click)="openCancelModal()"
+              class="btn-secondary w-full mt-6 text-red-600 border-red-300 hover:bg-red-50"
+            >
+              Cancel Booking
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Cancel Modal -->
+  @if (showCancelModal()) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">Cancel Booking?</h3>
+        <p class="text-gray-600 mb-6">Are you sure you want to cancel this booking? This action cannot be undone.</p>
+        
+        @if (error()) {
+          <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p class="text-red-700 text-sm">{{ error() }}</p>
+          </div>
+        }
+        
+        <div class="flex gap-3">
+          <button (click)="closeCancelModal()" class="btn-secondary flex-1" [disabled]="cancelling()">
+            Keep Booking
+          </button>
+          <button (click)="confirmCancel()" class="btn-primary flex-1 bg-red-600 hover:bg-red-700" [disabled]="cancelling()">
+            @if (cancelling()) {
+              Cancelling...
+            } @else {
+              Yes, Cancel
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
