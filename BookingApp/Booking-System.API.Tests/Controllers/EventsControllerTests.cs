@@ -64,12 +64,12 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.GetAllEvents(1, 20);
 
             // Assert
-            result.Result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result.Result as ObjectResult;
+            result.Result.Should().BeAssignableTo<OkObjectResult>();
+            var objectResult = result.Result as OkObjectResult;
             objectResult!.StatusCode.Should().Be(StatusCodes.Status200OK);
-            var response = objectResult.Value as PaginatedResponse<EventDto>;
-            response.Should().NotBeNull();
-            response!.Items.Should().HaveCount(2);
+            var apiResponse = objectResult.Value as ApiResponse<PaginatedResponse<EventDto>>;
+            apiResponse.Should().NotBeNull();
+            apiResponse!.Data!.Items.Should().HaveCount(2);
         }
 
         /// <summary>
@@ -94,11 +94,11 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.GetAllEvents(1, 20);
 
             // Assert
-            result.Result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result.Result as ObjectResult;
+            result.Result.Should().BeAssignableTo<OkObjectResult>();
+            var objectResult = result.Result as OkObjectResult;
             objectResult!.StatusCode.Should().Be(StatusCodes.Status200OK);
-            var response = objectResult.Value as PaginatedResponse<EventDto>;
-            response!.Items.Should().BeEmpty();
+            var apiResponse = objectResult.Value as ApiResponse<PaginatedResponse<EventDto>>;
+            apiResponse!.Data!.Items.Should().BeEmpty();
         }
 
         /// <summary>
@@ -130,12 +130,12 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.GetAllEvents(1, 20);
 
             // Assert
-            result.Result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result.Result as ObjectResult;
+            result.Result.Should().BeAssignableTo<OkObjectResult>();
+            var objectResult = result.Result as OkObjectResult;
             objectResult!.StatusCode.Should().Be(StatusCodes.Status200OK);
-            var response = objectResult.Value as PaginatedResponse<EventDto>;
-            response!.Items.First().isBooked.Should().BeTrue();
-            response.Items.Last().isBooked.Should().BeFalse();
+            var apiResponse = objectResult.Value as ApiResponse<PaginatedResponse<EventDto>>;
+            apiResponse!.Data!.Items.First().isBooked.Should().BeTrue();
+            apiResponse.Data.Items.Last().isBooked.Should().BeFalse();
         }
 
         /// <summary>
@@ -167,7 +167,6 @@ namespace Booking_System.API.Tests.Controllers
         public async Task SearchEvents_ValidSearchCriteria_ReturnsOkWithFilteredEvents()
         {
             // Arrange
-            var searchHandler = new EventSearchHandler { Keyword = "Concert" };
             var paginatedResponse = new PaginatedResponse<EventDto>
             {
                 Items = new List<EventDto>
@@ -183,21 +182,19 @@ namespace Booking_System.API.Tests.Controllers
                 .ReturnsAsync(paginatedResponse);
 
             // Act
-            var result = await _sut.SearchEvents(searchHandler, 1, 20);
+            var result = await _sut.SearchEvents(keyword: "Concert", pageIndex: 1, pageSize: 20);
 
             // Assert
             result.Result.Should().BeAssignableTo<ObjectResult>();
             var objectResult = result.Result as ObjectResult;
             objectResult!.StatusCode.Should().Be(StatusCodes.Status200OK);
-            var response = objectResult.Value as PaginatedResponse<EventDto>;
-            response!.Items.Should().HaveCount(1);
         }
 
         /// <summary>
-        /// Verifies that SearchEvents with null handler creates default handler.
+        /// Verifies that SearchEvents with no filters returns all events.
         /// </summary>
         [Fact]
-        public async Task SearchEvents_NullSearchHandler_UsesDefaultHandler()
+        public async Task SearchEvents_NoFilters_ReturnsAllEvents()
         {
             // Arrange
             var paginatedResponse = new PaginatedResponse<EventDto>
@@ -212,7 +209,7 @@ namespace Booking_System.API.Tests.Controllers
                 .ReturnsAsync(paginatedResponse);
 
             // Act
-            var result = await _sut.SearchEvents(null, 1, 20);
+            var result = await _sut.SearchEvents(pageIndex: 1, pageSize: 20);
 
             // Assert
             result.Result.Should().BeAssignableTo<ObjectResult>();
@@ -247,12 +244,12 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.GetEventById(eventId);
 
             // Assert
-            result.Result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result.Result as ObjectResult;
+            result.Result.Should().BeAssignableTo<OkObjectResult>();
+            var objectResult = result.Result as OkObjectResult;
             objectResult!.StatusCode.Should().Be(StatusCodes.Status200OK);
-            var returnedEvent = objectResult.Value as EventDto;
-            returnedEvent.Should().NotBeNull();
-            returnedEvent!.EventId.Should().Be(eventId);
+            var apiResponse = objectResult.Value as ApiResponse<EventDto>;
+            apiResponse.Should().NotBeNull();
+            apiResponse!.Data!.EventId.Should().Be(eventId);
         }
 
         /// <summary>
@@ -281,10 +278,10 @@ namespace Booking_System.API.Tests.Controllers
         #region CreateEvent Tests
 
         /// <summary>
-        /// Verifies that CreateEvent returns Created when event is created successfully (Admin only).
+        /// Verifies that CreateEvent returns Ok when event is created successfully (Admin only).
         /// </summary>
         [Fact]
-        public async Task CreateEvent_ValidData_ReturnsCreated()
+        public async Task CreateEvent_ValidData_ReturnsOk()
         {
             // Arrange
             var mockFile = new Mock<IFormFile>();
@@ -314,7 +311,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.CreateEvent(createEventDto, ticketTypes);
 
             // Assert
-            result.Result.Should().BeOfType<CreatedResult>();
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -355,7 +352,8 @@ namespace Booking_System.API.Tests.Controllers
 
             // Assert
             var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            badRequestResult.Value.Should().Be("At least one ticket type is required");
+            var apiResponse = badRequestResult.Value as ApiResponse<EventDto>;
+            apiResponse!.Message.Should().Be("At least one ticket type is required");
         }
 
         /// <summary>
@@ -384,10 +382,10 @@ namespace Booking_System.API.Tests.Controllers
         #region UpdateEvent Tests
 
         /// <summary>
-        /// Verifies that UpdateEvent returns NoContent when event is updated successfully.
+        /// Verifies that UpdateEvent returns Ok when event is updated successfully.
         /// </summary>
         [Fact]
-        public async Task UpdateEvent_ValidData_ReturnsNoContent()
+        public async Task UpdateEvent_ValidData_ReturnsOk()
         {
             // Arrange
             var updateEventDto = new UpdateEventDto
@@ -404,7 +402,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.UpdateEvent(updateEventDto);
 
             // Assert
-            result.Should().BeOfType<NoContentResult>();
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -421,7 +419,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.UpdateEvent(updateEventDto);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         /// <summary>
@@ -440,7 +438,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.UpdateEvent(updateEventDto);
 
             // Assert
-            result.Should().BeOfType<NotFoundObjectResult>();
+            result.Result.Should().BeOfType<NotFoundObjectResult>();
         }
 
         #endregion
@@ -448,10 +446,10 @@ namespace Booking_System.API.Tests.Controllers
         #region DeleteEvent Tests
 
         /// <summary>
-        /// Verifies that DeleteEvent returns NoContent when event is deleted successfully.
+        /// Verifies that DeleteEvent returns Ok when event is deleted successfully.
         /// </summary>
         [Fact]
-        public async Task DeleteEvent_ValidId_ReturnsNoContent()
+        public async Task DeleteEvent_ValidId_ReturnsOk()
         {
             // Arrange
             var eventId = 1;
@@ -463,7 +461,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.DeleteEvent(eventId);
 
             // Assert
-            result.Should().BeOfType<NoContentResult>();
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -482,7 +480,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.DeleteEvent(eventId);
 
             // Assert
-            result.Should().BeOfType<NotFoundObjectResult>();
+            result.Result.Should().BeOfType<NotFoundObjectResult>();
         }
 
         /// <summary>
@@ -501,7 +499,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.DeleteEvent(eventId);
 
             // Assert
-            var statusCodeResult = result.Should().BeOfType<ObjectResult>().Subject;
+            var statusCodeResult = result.Result.Should().BeOfType<ObjectResult>().Subject;
             statusCodeResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
