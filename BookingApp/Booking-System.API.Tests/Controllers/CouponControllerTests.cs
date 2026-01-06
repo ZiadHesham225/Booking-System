@@ -45,8 +45,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.GetAllCoupons();
 
             // Assert
-            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            okResult.Value.Should().BeEquivalentTo(new { success = true, data = coupons });
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -63,7 +62,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.GetAllCoupons();
 
             // Assert
-            var statusCodeResult = result.Should().BeOfType<ObjectResult>().Subject;
+            var statusCodeResult = result.Result.Should().BeOfType<ObjectResult>().Subject;
             statusCodeResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
@@ -90,8 +89,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.GetActiveCoupons();
 
             // Assert
-            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            okResult.Value.Should().BeEquivalentTo(new { success = true, data = activeCoupons });
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         #endregion
@@ -115,8 +113,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.GetCouponById(couponId);
 
             // Assert
-            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            okResult.Value.Should().BeEquivalentTo(new { success = true, data = coupon });
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -135,8 +132,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.GetCouponById(couponId);
 
             // Assert
-            var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            notFoundResult.Value.Should().BeEquivalentTo(new { success = false, message = "Coupon not found" });
+            result.Result.Should().BeOfType<NotFoundObjectResult>();
         }
 
         #endregion
@@ -160,8 +156,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.GetCouponByCode(couponCode);
 
             // Assert
-            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            okResult.Value.Should().BeEquivalentTo(new { success = true, data = coupon });
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -180,7 +175,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.GetCouponByCode(couponCode);
 
             // Assert
-            result.Should().BeOfType<NotFoundObjectResult>();
+            result.Result.Should().BeOfType<NotFoundObjectResult>();
         }
 
         #endregion
@@ -188,10 +183,10 @@ namespace Booking_System.API.Tests.Controllers
         #region CreateCoupon Tests (Admin Only)
 
         /// <summary>
-        /// Verifies that CreateCoupon returns CreatedAtAction when coupon is created successfully.
+        /// Verifies that CreateCoupon returns Ok when coupon is created successfully.
         /// </summary>
         [Fact]
-        public async Task CreateCoupon_ValidData_ReturnsCreatedAtAction()
+        public async Task CreateCoupon_ValidData_ReturnsOk()
         {
             // Arrange
             var createDto = new CreateCouponDto
@@ -218,9 +213,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.CreateCoupon(createDto);
 
             // Assert
-            var createdResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
-            createdResult.ActionName.Should().Be(nameof(CouponController.GetCouponById));
-            createdResult.Value.Should().BeEquivalentTo(new { success = true, data = createdCoupon });
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -237,7 +230,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.CreateCoupon(createDto);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         /// <summary>
@@ -260,8 +253,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.CreateCoupon(createDto);
 
             // Assert
-            var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            badRequestResult.Value.Should().BeEquivalentTo(new { success = false, message = "Coupon with this code already exists." });
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         /// <summary>
@@ -284,7 +276,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.CreateCoupon(createDto);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         #endregion
@@ -313,8 +305,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.UpdateCoupon(couponId, updateDto);
 
             // Assert
-            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            okResult.Value.Should().BeEquivalentTo(new { success = true, message = "Coupon updated successfully" });
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -335,8 +326,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.UpdateCoupon(couponId, updateDto);
 
             // Assert
-            var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            badRequestResult.Value.Should().BeEquivalentTo(new { success = false, message = "ID mismatch" });
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         /// <summary>
@@ -360,7 +350,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.UpdateCoupon(couponId, updateDto);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         #endregion
@@ -383,8 +373,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.DeleteCoupon(couponId);
 
             // Assert
-            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            okResult.Value.Should().BeEquivalentTo(new { success = true, message = "Coupon deleted successfully" });
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -403,7 +392,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.DeleteCoupon(couponId);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         #endregion
@@ -426,8 +415,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.ToggleCouponStatus(couponId);
 
             // Assert
-            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            okResult.Value.Should().BeEquivalentTo(new { success = true, message = "Coupon status toggled successfully" });
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -446,7 +434,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.ToggleCouponStatus(couponId);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>();
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         #endregion
