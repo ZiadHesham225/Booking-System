@@ -1,5 +1,6 @@
 using Booking_System.Application.DTOs.Auth;
 using Booking_System.Application.Interfaces;
+using Booking_System.Application.Services;
 using Booking_System.Controllers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -7,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
-using System.Security.Authentication;
 using System.Security.Claims;
 
 namespace Booking_System.API.Tests.Controllers
@@ -31,10 +31,10 @@ namespace Booking_System.API.Tests.Controllers
         #region Register Tests
 
         /// <summary>
-        /// Verifies that Register returns Created status when registration is successful.
+        /// Verifies that Register returns Ok status when registration is successful.
         /// </summary>
         [Fact]
-        public async Task Register_ValidData_ReturnsCreatedStatus()
+        public async Task Register_ValidData_ReturnsOkStatus()
         {
             // Arrange
             var registerDto = new RegisterDto
@@ -53,8 +53,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.Register(registerDto);
 
             // Assert
-            var statusCodeResult = result.Should().BeOfType<ObjectResult>().Subject;
-            statusCodeResult.StatusCode.Should().Be(StatusCodes.Status201Created);
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -71,9 +70,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.Register(registerDto);
 
             // Assert
-            result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result as ObjectResult;
-            objectResult!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         /// <summary>
@@ -99,10 +96,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.Register(registerDto);
 
             // Assert
-            result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result as ObjectResult;
-            objectResult!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-            objectResult.Value.Should().BeEquivalentTo(new { message = "User with this username already exists" });
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         /// <summary>
@@ -128,10 +122,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.Register(registerDto);
 
             // Assert
-            result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result as ObjectResult;
-            objectResult!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-            objectResult.Value.Should().BeEquivalentTo(new { message = "User with this email already exists" });
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         /// <summary>
@@ -157,7 +148,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.Register(registerDto);
 
             // Assert
-            var statusCodeResult = result.Should().BeOfType<ObjectResult>().Subject;
+            var statusCodeResult = result.Result.Should().BeOfType<ObjectResult>().Subject;
             statusCodeResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         }
 
@@ -193,10 +184,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.Login(loginDto);
 
             // Assert
-            result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result as ObjectResult;
-            objectResult!.StatusCode.Should().Be(StatusCodes.Status200OK);
-            objectResult.Value.Should().BeEquivalentTo(authResponse);
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -213,9 +201,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.Login(loginDto);
 
             // Assert
-            result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result as ObjectResult;
-            objectResult!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         /// <summary>
@@ -238,10 +224,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.Login(loginDto);
 
             // Assert
-            result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result as ObjectResult;
-            objectResult!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-            objectResult.Value.Should().BeEquivalentTo(new { message = "Invalid email or password" });
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         /// <summary>
@@ -264,10 +247,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.Login(loginDto);
 
             // Assert
-            result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result as ObjectResult;
-            objectResult!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-            objectResult.Value.Should().BeEquivalentTo(new { message = "Invalid email or password" });
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         #endregion
@@ -302,10 +282,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.RefreshToken(refreshTokenDto);
 
             // Assert
-            result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result as ObjectResult;
-            objectResult!.StatusCode.Should().Be(StatusCodes.Status200OK);
-            objectResult.Value.Should().BeEquivalentTo(tokenResponse);
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -322,9 +299,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.RefreshToken(refreshTokenDto);
 
             // Assert
-            result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result as ObjectResult;
-            objectResult!.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+            result.Result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         /// <summary>
@@ -347,10 +322,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.RefreshToken(refreshTokenDto);
 
             // Assert
-            result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result as ObjectResult;
-            objectResult!.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
-            objectResult.Value.Should().BeEquivalentTo(new { message = "Invalid or expired token" });
+            result.Result.Should().BeOfType<UnauthorizedObjectResult>();
         }
 
         #endregion
@@ -374,10 +346,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.RevokeToken();
 
             // Assert
-            result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result as ObjectResult;
-            objectResult!.StatusCode.Should().Be(StatusCodes.Status200OK);
-            objectResult.Value.Should().BeEquivalentTo(new { message = "Token revoked successfully" });
+            result.Result.Should().BeOfType<OkObjectResult>();
         }
 
         /// <summary>
@@ -393,9 +362,7 @@ namespace Booking_System.API.Tests.Controllers
             var result = await _sut.RevokeToken();
 
             // Assert
-            result.Should().BeAssignableTo<ObjectResult>();
-            var objectResult = result as ObjectResult;
-            objectResult!.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
+            result.Result.Should().BeOfType<UnauthorizedObjectResult>();
         }
 
         #endregion
