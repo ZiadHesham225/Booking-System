@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Booking_System.Application.Interfaces;
+using Booking_System.Application.Common;
 using Booking_System.Application.DTOs.Booking;
 using Booking_System.Application.DTOs.Coupon;
 
@@ -24,17 +25,17 @@ namespace Booking_System.Controllers
         /// </summary>
         /// <returns>List of user bookings</returns>
         [HttpGet("user-bookings")]
-        public async Task<IActionResult> GetUserBookings()
+        public async Task<ActionResult<ApiResponse<IEnumerable<BookingDto>>>> GetUserBookings()
         {
             try
             {
                 var userId = GetCurrentUserId();
                 var bookings = await _bookingService.GetUserBookingsAsync(userId);
-                return Ok(bookings);
+                return Ok(ApiResponse<IEnumerable<BookingDto>>.Success(bookings));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while retrieving bookings.", details = ex.Message });
+                return StatusCode(500, ApiResponse<IEnumerable<BookingDto>>.Failure("An error occurred while retrieving bookings."));
             }
         }
 
@@ -44,21 +45,21 @@ namespace Booking_System.Controllers
         /// <param name="id">Booking ID</param>
         /// <returns>Booking details</returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetBookingDetails(int id)
+        public async Task<ActionResult<ApiResponse<BookingDto>>> GetBookingDetails(int id)
         {
             try
             {
                 var userId = GetCurrentUserId();
                 var booking = await _bookingService.GetBookingDetailsByIdAsync(id, userId);
-                return Ok(booking);
+                return Ok(ApiResponse<BookingDto>.Success(booking));
             }
             catch (ArgumentException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(ApiResponse<BookingDto>.Failure(ex.Message));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while retrieving booking details.", details = ex.Message });
+                return StatusCode(500, ApiResponse<BookingDto>.Failure("An error occurred while retrieving booking details."));
             }
         }
         /// <summary>
@@ -67,30 +68,30 @@ namespace Booking_System.Controllers
         /// <param name="bookingDto">Booking creation data</param>
         /// <returns>Created booking</returns>
         [HttpPost]
-        public async Task<IActionResult> CreateBooking([FromBody] CreateBookingDto bookingDto)
+        public async Task<ActionResult<ApiResponse<BookingDto>>> CreateBooking([FromBody] CreateBookingDto bookingDto)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(ApiResponse<BookingDto>.Failure("Invalid data"));
             }
 
             try
             {
                 var userId = GetCurrentUserId();
                 var booking = await _bookingService.CreateBookingAsync(bookingDto, userId);
-                return CreatedAtAction(nameof(GetBookingDetails), new { id = booking.BookingId }, booking);
+                return Ok(ApiResponse<BookingDto>.Success(booking, "Booking created successfully"));
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(ApiResponse<BookingDto>.Failure(ex.Message));
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(new { message = ex.Message });
+                return Conflict(ApiResponse<BookingDto>.Failure(ex.Message));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while creating the booking.", details = ex.Message });
+                return StatusCode(500, ApiResponse<BookingDto>.Failure("An error occurred while creating the booking."));
             }
         }
 
@@ -100,21 +101,21 @@ namespace Booking_System.Controllers
         /// <param name="id">Booking ID</param>
         /// <returns>No content on success</returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBooking(int id)
+        public async Task<ActionResult<ApiResponse>> DeleteBooking(int id)
         {
             try
             {
                 var userId = GetCurrentUserId();
                 await _bookingService.DeleteBookingAsync(id, userId);
-                return NoContent();
+                return Ok(ApiResponse.Success("Booking deleted successfully"));
             }
             catch (ArgumentException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(ApiResponse.Failure(ex.Message));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while deleting the booking.", details = ex.Message });
+                return StatusCode(500, ApiResponse.Failure("An error occurred while deleting the booking."));
             }
         }
 
@@ -124,17 +125,17 @@ namespace Booking_System.Controllers
         /// <param name="eventId">Event ID</param>
         /// <returns>Boolean indicating if user has booked</returns>
         [HttpGet("check-booking/{eventId}")]
-        public async Task<IActionResult> HasUserBookedEventTicketType(int eventId)
+        public async Task<ActionResult<ApiResponse<object>>> HasUserBookedEventTicketType(int eventId)
         {
             try
             {
                 var userId = GetCurrentUserId();
                 var hasBooked = await _bookingService.HasUserBookedEventAsync(userId, eventId);
-                return Ok(new { hasBooked });
+                return Ok(ApiResponse<object>.Success(new { hasBooked }));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while checking booking status.", details = ex.Message });
+                return StatusCode(500, ApiResponse<object>.Failure("An error occurred while checking booking status."));
             }
         }
         private string GetCurrentUserId()

@@ -26,7 +26,7 @@ namespace Booking_System.Controllers
         /// Get all events with pagination
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<PaginatedResponse<EventDto>>> GetAllEvents(
+        public async Task<ActionResult<ApiResponse<PaginatedResponse<EventDto>>>> GetAllEvents(
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 20)
         {
@@ -34,21 +34,30 @@ namespace Booking_System.Controllers
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var result = await _eventService.GetAllEventsAsync(userId, pageIndex, pageSize);
-                return Ok(result);
+                return Ok(ApiResponse<PaginatedResponse<EventDto>>.Success(result));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while retrieving events");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving events");
+                return StatusCode(StatusCodes.Status500InternalServerError, 
+                    ApiResponse<PaginatedResponse<EventDto>>.Failure("Error retrieving events"));
             }
         }
 
         /// <summary>
         /// Search events with various filters
         /// </summary>
-        [HttpPost("search")]
-        public async Task<ActionResult<PaginatedResponse<EventDto>>> SearchEvents(
-            [FromBody] EventSearchHandler? searchHandler = null,
+        [HttpGet("search")]
+        public async Task<ActionResult<ApiResponse<PaginatedResponse<EventDto>>>> SearchEvents(
+            [FromQuery] string? keyword = null,
+            [FromQuery] string? city = null,
+            [FromQuery] int? categoryId = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] decimal? minPrice = null,
+            [FromQuery] decimal? maxPrice = null,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] bool isDescending = false,
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 20
             )
@@ -56,14 +65,26 @@ namespace Booking_System.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                searchHandler ??= new EventSearchHandler();
+                var searchHandler = new EventSearchHandler
+                {
+                    Keyword = keyword,
+                    City = city,
+                    CategoryId = categoryId,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    MinPrice = minPrice,
+                    MaxPrice = maxPrice,
+                    SortBy = sortBy,
+                    IsDescending = isDescending
+                };
                 var result = await _eventService.SearchEventsAsync(searchHandler, userId, pageIndex, pageSize);
-                return Ok(result);
+                return Ok(ApiResponse<PaginatedResponse<EventDto>>.Success(result));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while searching events");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error searching events");
+                return StatusCode(StatusCodes.Status500InternalServerError, 
+                    ApiResponse<PaginatedResponse<EventDto>>.Failure("Error searching events"));
             }
         }
 
@@ -71,7 +92,7 @@ namespace Booking_System.Controllers
         /// Get event by ID
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<EventDto>> GetEventById(int id)
+        public async Task<ActionResult<ApiResponse<EventDto>>> GetEventById(int id)
         {
             try
             {
@@ -79,14 +100,15 @@ namespace Booking_System.Controllers
                 var result = await _eventService.GetEventByIdAsync(id, userId);
 
                 if (result == null)
-                    return NotFound($"Event with ID {id} not found");
+                    return NotFound(ApiResponse<EventDto>.Failure($"Event with ID {id} not found"));
 
-                return Ok(result);
+                return Ok(ApiResponse<EventDto>.Success(result));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while retrieving event with ID {EventId}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Error retrieving event with ID {id}");
+                return StatusCode(StatusCodes.Status500InternalServerError, 
+                    ApiResponse<EventDto>.Failure($"Error retrieving event with ID {id}"));
             }
         }
 
@@ -95,23 +117,24 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<CreateEventDto>> CreateEvent([FromForm] CreateEventDto eventDto, [FromForm] List<CreateEventTicketTypeDto> ticketTypes)
+        public async Task<ActionResult<ApiResponse<EventDto>>> CreateEvent([FromForm] CreateEventDto eventDto, [FromForm] List<CreateEventTicketTypeDto> ticketTypes)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ApiResponse<EventDto>.Failure("Invalid data"));
 
             if (ticketTypes == null || !ticketTypes.Any())
-                return BadRequest("At least one ticket type is required");
+                return BadRequest(ApiResponse<EventDto>.Failure("At least one ticket type is required"));
 
             try
             {
                 var createdEvent = await _eventService.CreateEventAsync(eventDto, ticketTypes);
-                return Created();
+                return Ok(ApiResponse<EventDto>.Success(null!, "Event created successfully"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while creating event");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error creating event");
+                return StatusCode(StatusCodes.Status500InternalServerError, 
+                    ApiResponse<EventDto>.Failure("Error creating event"));
             }
         }
 
@@ -120,24 +143,25 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpPut]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> UpdateEvent([FromForm] UpdateEventDto eventDto)
+        public async Task<ActionResult<ApiResponse>> UpdateEvent([FromForm] UpdateEventDto eventDto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ApiResponse.Failure("Invalid data"));
 
             try
             {
                 await _eventService.UpdateEventAsync(eventDto);
-                return NoContent();
+                return Ok(ApiResponse.Success("Event updated successfully"));
             }
             catch (ArgumentException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(ApiResponse.Failure(ex.Message));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while updating event with ID {EventId}", eventDto.EventId);
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Error updating event with ID {eventDto.EventId}");
+                return StatusCode(StatusCodes.Status500InternalServerError, 
+                    ApiResponse.Failure($"Error updating event with ID {eventDto.EventId}"));
             }
         }
 
@@ -146,21 +170,22 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> DeleteEvent(int id)
+        public async Task<ActionResult<ApiResponse>> DeleteEvent(int id)
         {
             try
             {
                 await _eventService.DeleteEventAsync(id);
-                return NoContent();
+                return Ok(ApiResponse.Success("Event deleted successfully"));
             }
             catch (ArgumentException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(ApiResponse.Failure(ex.Message));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while deleting event with ID {EventId}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Error deleting event with ID {id}");
+                return StatusCode(StatusCodes.Status500InternalServerError, 
+                    ApiResponse.Failure($"Error deleting event with ID {id}"));
             }
         }
     }

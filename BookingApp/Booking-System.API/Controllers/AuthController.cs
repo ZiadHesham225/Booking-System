@@ -1,11 +1,12 @@
 using Booking_System.Application.Interfaces;
+using Booking_System.Application.Common;
 using Booking_System.Application.DTOs.Auth;
+using Booking_System.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
-using System.Security.Authentication;
 
 namespace Booking_System.Controllers
 {
@@ -22,54 +23,54 @@ namespace Booking_System.Controllers
             _logger = logger;
         }
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        public async Task<ActionResult<ApiResponse>> Register([FromBody] RegisterDto registerDto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ApiResponse.Failure("Invalid data"));
 
             try
             {
                 await _authService.RegisterUserAsync(registerDto);
-                return StatusCode(StatusCodes.Status201Created, new { message = "User registered successfully" });
+                return Ok(ApiResponse.Success("User registered successfully"));
             }
             catch (AuthenticationException ex)
             {
                 _logger.LogWarning(ex, "Authentication error during registration");
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(ApiResponse.Failure(ex.Message));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error registering user");
-                return StatusCode(500, new { message = "An error occurred during registration" });
+                return StatusCode(500, ApiResponse.Failure("An error occurred during registration"));
             }
         }
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        public async Task<ActionResult<ApiResponse<AuthResponseDto>>> Login([FromBody] LoginDto loginDto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ApiResponse<AuthResponseDto>.Failure("Invalid data"));
 
             try
             {
                 var authResponse = await _authService.LoginAsync(loginDto);
-                return Ok(authResponse);
+                return Ok(ApiResponse<AuthResponseDto>.Success(authResponse, "Login successful"));
             }
             catch (AuthenticationException ex)
             {
                 _logger.LogWarning(ex, "Authentication error during login");
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(ApiResponse<AuthResponseDto>.Failure(ex.Message));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error logging in user");
-                return StatusCode(500, new { message = "An error occurred during login" });
+                return StatusCode(500, ApiResponse<AuthResponseDto>.Failure("An error occurred during login"));
             }
         }
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
+        public async Task<ActionResult<ApiResponse<TokenResponseDto>>> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ApiResponse<TokenResponseDto>.Failure("Invalid data"));
 
             try
             {
@@ -77,71 +78,71 @@ namespace Booking_System.Controllers
                     refreshTokenDto.AccessToken,
                     refreshTokenDto.RefreshToken);
 
-                return Ok(authResponse);
+                return Ok(ApiResponse<TokenResponseDto>.Success(authResponse));
             }
             catch (SecurityTokenException ex)
             {
                 _logger.LogWarning(ex, "Invalid token during refresh");
-                return Unauthorized(new { message = "Invalid or expired token" });
+                return Unauthorized(ApiResponse<TokenResponseDto>.Failure("Invalid or expired token"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error refreshing token");
-                return StatusCode(500, new { message = "An error occurred while refreshing token" });
+                return StatusCode(500, ApiResponse<TokenResponseDto>.Failure("An error occurred while refreshing token"));
             }
         }
         [HttpPost("revoke")]
         [Authorize]
-        public async Task<IActionResult> RevokeToken()
+        public async Task<ActionResult<ApiResponse>> RevokeToken()
         {
             try
             {
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                 if (string.IsNullOrEmpty(userId))
-                    return Unauthorized(new { message = "User not authenticated" });
+                    return Unauthorized(ApiResponse.Failure("User not authenticated"));
 
                 await _authService.RevokeTokenAsync(userId);
-                return Ok(new { message = "Token revoked successfully" });
+                return Ok(ApiResponse.Success("Token revoked successfully"));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error revoking token");
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while revoking token" });
+                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse.Failure("An error occurred while revoking token"));
             }
         }
         [HttpPost("forgot-password")]
-        public async Task<ActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto model)
+        public async Task<ActionResult<ApiResponse>> ForgotPassword([FromBody] ForgotPasswordRequestDto model)
         {
             try
             {
                 await _authService.ForgotPasswordAsync(model);
-                return Ok("We've sent you a password reset email!");
+                return Ok(ApiResponse.Success("We've sent you a password reset email!"));
             }
             catch (ApplicationException ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                return BadRequest(ApiResponse.Failure(ex.Message));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Message = "An unexpected error occurred.", Details = ex.Message });
+                return StatusCode(500, ApiResponse.Failure("An unexpected error occurred."));
             }
         }
         [HttpPost("reset-password")]
-        public async Task<ActionResult> ResetPassword(ResetPasswordRequestDto model)
+        public async Task<ActionResult<ApiResponse>> ResetPassword(ResetPasswordRequestDto model)
         {
             try
             {
                 await _authService.ResetPasswordAsync(model);
-                return Ok("Password reset successfully!");
+                return Ok(ApiResponse.Success("Password reset successfully!"));
             }
             catch (ApplicationException ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                return BadRequest(ApiResponse.Failure(ex.Message));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Message = "An unexpected error occurred.", Details = ex.Message });
+                return StatusCode(500, ApiResponse.Failure("An unexpected error occurred."));
             }
         }
     }

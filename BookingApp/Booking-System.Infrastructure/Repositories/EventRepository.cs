@@ -95,6 +95,10 @@ namespace Booking_System.Infrastructure.Repositories
             {
                 events = events.Where(e => e.StartDateTime >= searchHandler.StartDate.Value);
             }
+            if (searchHandler.EndDate.HasValue)
+            {
+                events = events.Where(e => e.StartDateTime <= searchHandler.EndDate.Value);
+            }
             if (searchHandler.CategoryId.HasValue)
             {
                 events = events.Where(e => e.CategoryId == searchHandler.CategoryId.Value);
@@ -103,6 +107,29 @@ namespace Booking_System.Infrastructure.Repositories
             {
                 events = events.Where(e => e.City.Contains(searchHandler.City));
             }
+            if (searchHandler.MinPrice.HasValue)
+            {
+                events = events.Where(e => e.EventTicketTypes.Any(ett => ett.Price >= searchHandler.MinPrice.Value));
+            }
+            if (searchHandler.MaxPrice.HasValue)
+            {
+                events = events.Where(e => e.EventTicketTypes.Any(ett => ett.Price <= searchHandler.MaxPrice.Value));
+            }
+
+            // Apply sorting
+            events = searchHandler.SortBy?.ToLower() switch
+            {
+                "price" => searchHandler.IsDescending 
+                    ? events.OrderByDescending(e => e.EventTicketTypes.Min(ett => ett.Price))
+                    : events.OrderBy(e => e.EventTicketTypes.Min(ett => ett.Price)),
+                "title" => searchHandler.IsDescending 
+                    ? events.OrderByDescending(e => e.Title)
+                    : events.OrderBy(e => e.Title),
+                _ => searchHandler.IsDescending 
+                    ? events.OrderByDescending(e => e.StartDateTime)
+                    : events.OrderBy(e => e.StartDateTime)
+            };
+
             var pagedList = await PaginatedList<Event>.CreateAsync(events, pageIndex, pageSize);
 
             return new PaginatedResponse<Event>

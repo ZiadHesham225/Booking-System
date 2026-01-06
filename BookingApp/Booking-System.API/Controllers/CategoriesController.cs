@@ -1,4 +1,5 @@
 using Booking_System.Application.Interfaces;
+using Booking_System.Application.Common;
 using Booking_System.Application.DTOs.Category;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -18,57 +19,89 @@ namespace Booking_System.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<ApiResponse<IEnumerable<CategoryDto>>>> GetAll()
         {
-            var categories = await _service.GetAllAsync();
-            return Ok(categories);
+            try
+            {
+                var categories = await _service.GetAllAsync();
+                return Ok(ApiResponse<IEnumerable<CategoryDto>>.Success(categories));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<IEnumerable<CategoryDto>>.Failure("Error retrieving categories"));
+            }
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<ActionResult<ApiResponse<CategoryDto>>> Get(int id)
         {
-            var category = await _service.GetByIdAsync(id);
-            if (category == null) return NotFound();
-            return Ok(category);
+            try
+            {
+                var category = await _service.GetByIdAsync(id);
+                if (category == null) 
+                    return NotFound(ApiResponse<CategoryDto>.Failure("Category not found"));
+                return Ok(ApiResponse<CategoryDto>.Success(category));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<CategoryDto>.Failure("Error retrieving category"));
+            }
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([FromBody] CreateCategoryDto dto)
+        public async Task<ActionResult<ApiResponse<CategoryDto>>> Create([FromBody] CreateCategoryDto dto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            var created = await _service.CreateAsync(dto);
-            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+            if (!ModelState.IsValid) 
+                return BadRequest(ApiResponse<CategoryDto>.Failure("Invalid data"));
+            try
+            {
+                var created = await _service.CreateAsync(dto);
+                return Ok(ApiResponse<CategoryDto>.Success(created, "Category created successfully"));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<CategoryDto>.Failure("Error creating category"));
+            }
         }
 
         [HttpPut]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Update([FromBody] CategoryDto dto)
+        public async Task<ActionResult<ApiResponse>> Update([FromBody] CategoryDto dto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid) 
+                return BadRequest(ApiResponse.Failure("Invalid data"));
             try
             {
                 await _service.UpdateAsync(dto);
-                return NoContent();
+                return Ok(ApiResponse.Success("Category updated successfully"));
             }
             catch (ArgumentException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(ApiResponse.Failure(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse.Failure("Error updating category"));
             }
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<ActionResult<ApiResponse>> Delete(int id)
         {
             try
             {
                 await _service.DeleteAsync(id);
-                return NoContent();
+                return Ok(ApiResponse.Success("Category deleted successfully"));
             }
             catch (ArgumentException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(ApiResponse.Failure(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse.Failure("Error deleting category"));
             }
         }
     }

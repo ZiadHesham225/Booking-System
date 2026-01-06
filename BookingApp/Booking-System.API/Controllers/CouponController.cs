@@ -1,4 +1,5 @@
 using Booking_System.Application.Interfaces;
+using Booking_System.Application.Common;
 using Booking_System.Application.DTOs.Coupon;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -25,16 +26,16 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllCoupons()
+        public async Task<ActionResult<ApiResponse<IEnumerable<CouponDto>>>> GetAllCoupons()
         {
             try
             {
                 var coupons = await _couponService.GetAllAsync();
-                return Ok(new { success = true, data = coupons });
+                return Ok(ApiResponse<IEnumerable<CouponDto>>.Success(coupons));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+                return StatusCode(500, ApiResponse<IEnumerable<CouponDto>>.Failure("Internal server error"));
             }
         }
 
@@ -43,16 +44,16 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpGet("active")]
         [Authorize]
-        public async Task<IActionResult> GetActiveCoupons()
+        public async Task<ActionResult<ApiResponse<IEnumerable<CouponDto>>>> GetActiveCoupons()
         {
             try
             {
                 var coupons = await _couponService.GetActiveCouponsAsync();
-                return Ok(new { success = true, data = coupons });
+                return Ok(ApiResponse<IEnumerable<CouponDto>>.Success(coupons));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+                return StatusCode(500, ApiResponse<IEnumerable<CouponDto>>.Failure("Internal server error"));
             }
         }
 
@@ -61,19 +62,19 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpGet("{id:int}")]
         [Authorize]
-        public async Task<IActionResult> GetCouponById(int id)
+        public async Task<ActionResult<ApiResponse<CouponDto>>> GetCouponById(int id)
         {
             try
             {
                 var coupon = await _couponService.GetByIdAsync(id);
                 if (coupon == null)
-                    return NotFound(new { success = false, message = "Coupon not found" });
+                    return NotFound(ApiResponse<CouponDto>.Failure("Coupon not found"));
 
-                return Ok(new { success = true, data = coupon });
+                return Ok(ApiResponse<CouponDto>.Success(coupon));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+                return StatusCode(500, ApiResponse<CouponDto>.Failure("Internal server error"));
             }
         }
 
@@ -82,19 +83,19 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpGet("code/{code}")]
         [Authorize]
-        public async Task<IActionResult> GetCouponByCode(string code)
+        public async Task<ActionResult<ApiResponse<CouponDto>>> GetCouponByCode(string code)
         {
             try
             {
                 var coupon = await _couponService.GetByCodeAsync(code);
                 if (coupon == null)
-                    return NotFound(new { success = false, message = "Coupon not found" });
+                    return NotFound(ApiResponse<CouponDto>.Failure("Coupon not found"));
 
-                return Ok(new { success = true, data = coupon });
+                return Ok(ApiResponse<CouponDto>.Success(coupon));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+                return StatusCode(500, ApiResponse<CouponDto>.Failure("Internal server error"));
             }
         }
 
@@ -103,24 +104,23 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateCoupon([FromBody] CreateCouponDto dto)
+        public async Task<ActionResult<ApiResponse<CouponDto>>> CreateCoupon([FromBody] CreateCouponDto dto)
         {
             try
             {
                 if (!ModelState.IsValid)
-                    return BadRequest(new { success = false, message = "Invalid data", errors = ModelState });
+                    return BadRequest(ApiResponse<CouponDto>.Failure("Invalid data"));
 
                 var coupon = await _couponService.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetCouponById), new { id = coupon.CouponId },
-                    new { success = true, data = coupon });
+                return Ok(ApiResponse<CouponDto>.Success(coupon, "Coupon created successfully"));
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(ApiResponse<CouponDto>.Failure(ex.Message));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+                return StatusCode(500, ApiResponse<CouponDto>.Failure("Internal server error"));
             }
         }
 
@@ -129,26 +129,26 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpPut("{id:int}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateCoupon(int id, [FromBody] UpdateCouponDto dto)
+        public async Task<ActionResult<ApiResponse>> UpdateCoupon(int id, [FromBody] UpdateCouponDto dto)
         {
             try
             {
                 if (!ModelState.IsValid)
-                    return BadRequest(new { success = false, message = "Invalid data", errors = ModelState });
+                    return BadRequest(ApiResponse.Failure("Invalid data"));
 
                 if (id != dto.CouponId)
-                    return BadRequest(new { success = false, message = "ID mismatch" });
+                    return BadRequest(ApiResponse.Failure("ID mismatch"));
 
                 await _couponService.UpdateAsync(dto);
-                return Ok(new { success = true, message = "Coupon updated successfully" });
+                return Ok(ApiResponse.Success("Coupon updated successfully"));
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(ApiResponse.Failure(ex.Message));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+                return StatusCode(500, ApiResponse.Failure("Internal server error"));
             }
         }
 
@@ -157,20 +157,20 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteCoupon(int id)
+        public async Task<ActionResult<ApiResponse>> DeleteCoupon(int id)
         {
             try
             {
                 await _couponService.DeleteAsync(id);
-                return Ok(new { success = true, message = "Coupon deleted successfully" });
+                return Ok(ApiResponse.Success("Coupon deleted successfully"));
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(ApiResponse.Failure(ex.Message));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+                return StatusCode(500, ApiResponse.Failure("Internal server error"));
             }
         }
 
@@ -179,20 +179,20 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpPatch("{id:int}/toggle-status")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ToggleCouponStatus(int id)
+        public async Task<ActionResult<ApiResponse>> ToggleCouponStatus(int id)
         {
             try
             {
                 await _couponService.ToggleActiveStatusAsync(id);
-                return Ok(new { success = true, message = "Coupon status toggled successfully" });
+                return Ok(ApiResponse.Success("Coupon status toggled successfully"));
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(ApiResponse.Failure(ex.Message));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+                return StatusCode(500, ApiResponse.Failure("Internal server error"));
             }
         }
 
@@ -205,27 +205,27 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpPost("validate")]
         [Authorize]
-        public async Task<IActionResult> ValidateCoupon([FromBody] ValidateCouponDto request)
+        public async Task<ActionResult<ApiResponse<CouponValidationResult>>> ValidateCoupon([FromBody] ValidateCouponDto request)
         {
             try
             {
                 if (!ModelState.IsValid)
-                    return BadRequest(new { success = false, message = "Invalid data", errors = ModelState });
+                    return BadRequest(ApiResponse<CouponValidationResult>.Failure("Invalid data"));
 
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
-                    return Unauthorized(new { success = false, message = "User not authenticated" });
+                    return Unauthorized(ApiResponse<CouponValidationResult>.Failure("User not authenticated"));
 
                 var result = await _couponService.ValidateCouponCodeAsync(request.CouponCode, userId, request.OrderValue);
 
                 if (result.IsValid)
-                    return Ok(new { success = true, data = result });
+                    return Ok(ApiResponse<CouponValidationResult>.Success(result));
                 else
-                    return BadRequest(new { success = false, message = result.Message });
+                    return BadRequest(ApiResponse<CouponValidationResult>.Failure(result.Message));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+                return StatusCode(500, ApiResponse<CouponValidationResult>.Failure("Internal server error"));
             }
         }
         /// <summary>
@@ -233,20 +233,20 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpGet("usage-check/{couponId:int}")]
         [Authorize]
-        public async Task<IActionResult> CheckCouponUsage(int couponId)
+        public async Task<ActionResult<ApiResponse<object>>> CheckCouponUsage(int couponId)
         {
             try
             {
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
-                    return Unauthorized(new { success = false, message = "User not authenticated" });
+                    return Unauthorized(ApiResponse<object>.Failure("User not authenticated"));
 
                 var hasUsed = await _couponService.HasUserUsedCouponAsync(userId, couponId);
-                return Ok(new { success = true, data = new { hasUsed = hasUsed } });
+                return Ok(ApiResponse<object>.Success(new { hasUsed = hasUsed }));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+                return StatusCode(500, ApiResponse<object>.Failure("Internal server error"));
             }
         }
 
@@ -259,20 +259,20 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpGet("my-coupons")]
         [Authorize]
-        public async Task<IActionResult> GetMyCoupons()
+        public async Task<ActionResult<ApiResponse<IEnumerable<UserCouponDto>>>> GetMyCoupons()
         {
             try
             {
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
-                    return Unauthorized(new { success = false, message = "User not authenticated" });
+                    return Unauthorized(ApiResponse<IEnumerable<UserCouponDto>>.Failure("User not authenticated"));
 
                 var userCoupons = await _couponService.GetUserCouponsAsync(userId);
-                return Ok(new { success = true, data = userCoupons });
+                return Ok(ApiResponse<IEnumerable<UserCouponDto>>.Success(userCoupons));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+                return StatusCode(500, ApiResponse<IEnumerable<UserCouponDto>>.Failure("Internal server error"));
             }
         }
 
@@ -281,16 +281,16 @@ namespace Booking_System.Controllers
         /// </summary>
         [HttpGet("user/{userId}/coupons")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetUserCoupons(string userId)
+        public async Task<ActionResult<ApiResponse<IEnumerable<UserCouponDto>>>> GetUserCoupons(string userId)
         {
             try
             {
                 var userCoupons = await _couponService.GetUserCouponsAsync(userId);
-                return Ok(new { success = true, data = userCoupons });
+                return Ok(ApiResponse<IEnumerable<UserCouponDto>>.Success(userCoupons));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+                return StatusCode(500, ApiResponse<IEnumerable<UserCouponDto>>.Failure("Internal server error"));
             }
         }
 
