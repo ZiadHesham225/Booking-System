@@ -10,12 +10,12 @@ namespace Booking_System.Extensions
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "WatchParty API",
+                    Title = "Booking API",
                     Version = "v1",
-                    Description = "API for WatchParty application",
+                    Description = "API for Booking application",
                     Contact = new OpenApiContact
                     {
-                        Name = "WatchParty Team"
+                        Name = "Booking Team"
                     }
                 });
 
